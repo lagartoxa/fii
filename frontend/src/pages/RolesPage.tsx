@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import roleService, { Role, CreateRoleData } from '../services/roleService';
 import permissionService, { Permission } from '../services/permissionService';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import RoleForm from '../components/RoleForm';
 import '../styles/fiis.css';
 
@@ -13,6 +14,8 @@ const RolesPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ pk: number; name: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         loadRoles();
@@ -86,18 +89,28 @@ const RolesPage: React.FC = () => {
         }
     };
 
-    const handleDelete = async (pk: number, name: string) => {
-        if (!window.confirm(`Are you sure you want to delete ${name}?`)) {
-            return;
-        }
+    const handleDeleteClick = (pk: number, name: string) => {
+        setDeleteConfirm({ pk, name });
+    };
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm) return;
+
+        setIsDeleting(true);
         try {
-            await roleService.delete(pk);
-            setRoles(roles.filter(role => role.pk !== pk));
+            await roleService.delete(deleteConfirm.pk);
+            setRoles(roles.filter(role => role.pk !== deleteConfirm.pk));
+            setDeleteConfirm(null);
         } catch (err: any) {
             console.error('Error deleting Role:', err);
             setError('Failed to delete Role. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirm(null);
     };
 
     if (loading) {
@@ -153,7 +166,7 @@ const RolesPage: React.FC = () => {
                                         <button
                                             className="btn-delete"
                                             title="Delete"
-                                            onClick={() => handleDelete(role.pk, role.name)}
+                                            onClick={() => handleDeleteClick(role.pk, role.name)}
                                         >
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -190,6 +203,20 @@ const RolesPage: React.FC = () => {
                     permissions={permissions}
                 />
             </Modal>
+
+            {deleteConfirm && (
+                <ConfirmDialog
+                    isOpen={!!deleteConfirm}
+                    onClose={handleDeleteCancel}
+                    onConfirm={handleDeleteConfirm}
+                    title="Delete Role"
+                    message={`Are you sure you want to delete role ${deleteConfirm.name}? This action cannot be undone.`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
+            )}
         </div>
     );
 };

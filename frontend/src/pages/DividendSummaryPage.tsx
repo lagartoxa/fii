@@ -146,21 +146,21 @@ const DividendSummaryPage: React.FC = () => {
                                                 </td>
                                             )}
                                             <td>{dividend.payment_date.split('-').reverse().join('/')}</td>
-                                            <td style={{ textAlign: 'right' }}>
+                                            <td>
                                                 R$ {Number(dividend.amount_per_unit).toFixed(4)}
                                             </td>
-                                            <td style={{ textAlign: 'center' }}>{dividend.units_held}</td>
-                                            <td style={{ textAlign: 'right', fontWeight: 500 }}>
+                                            <td>{dividend.units_held}</td>
+                                            <td style={{ fontWeight: 500 }}>
                                                 R$ {Number(dividend.total_amount).toFixed(2)}
                                             </td>
                                         </tr>
                                     ))}
                                     {fii.dividends.length > 1 && (
                                         <tr style={{ backgroundColor: '#1f1f20', fontWeight: 600, color: '#ffffff' }}>
-                                            <td colSpan={3} style={{ textAlign: 'right', paddingRight: '20px' }}>
+                                            <td colSpan={4}>
                                                 Subtotal {fii.fii_tag}:
                                             </td>
-                                            <td style={{ textAlign: 'right' }}>
+                                            <td>
                                                 R$ {Number(fii.total_amount).toFixed(2)}
                                             </td>
                                         </tr>
@@ -170,10 +170,10 @@ const DividendSummaryPage: React.FC = () => {
                         </tbody>
                         <tfoot>
                             <tr style={{ fontWeight: 'bold', backgroundColor: '#a2154a', color: '#ffffff' }}>
-                                <td colSpan={4} style={{ textAlign: 'right', paddingRight: '20px' }}>
+                                <td colSpan={4}>
                                     Total Geral:
                                 </td>
-                                <td style={{ textAlign: 'right', fontSize: '16px' }}>
+                                <td style={{ fontSize: '16px' }}>
                                     R$ {Number(summary.total).toFixed(2)}
                                 </td>
                             </tr>

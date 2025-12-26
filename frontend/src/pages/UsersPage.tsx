@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import userService, { User, CreateUserData } from '../services/userService';
 import roleService, { Role } from '../services/roleService';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import UserForm from '../components/UserForm';
 import '../styles/fiis.css';
 
@@ -13,6 +14,8 @@ const UsersPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ pk: number; username: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         loadUsers();
@@ -103,18 +106,28 @@ const UsersPage: React.FC = () => {
         }
     };
 
-    const handleDelete = async (pk: number, username: string) => {
-        if (!window.confirm(`Are you sure you want to delete user ${username}?`)) {
-            return;
-        }
+    const handleDeleteClick = (pk: number, username: string) => {
+        setDeleteConfirm({ pk, username });
+    };
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm) return;
+
+        setIsDeleting(true);
         try {
-            await userService.delete(pk);
-            setUsers(users.filter(user => user.pk !== pk));
+            await userService.delete(deleteConfirm.pk);
+            setUsers(users.filter(user => user.pk !== deleteConfirm.pk));
+            setDeleteConfirm(null);
         } catch (err: any) {
             console.error('Error deleting User:', err);
             setError(err.response?.data?.detail || 'Failed to delete User. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirm(null);
     };
 
     if (loading) {
@@ -191,7 +204,7 @@ const UsersPage: React.FC = () => {
                                         <button
                                             className="btn-delete"
                                             title="Delete"
-                                            onClick={() => handleDelete(user.pk, user.username)}
+                                            onClick={() => handleDeleteClick(user.pk, user.username)}
                                         >
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -232,6 +245,20 @@ const UsersPage: React.FC = () => {
                     roles={roles}
                 />
             </Modal>
+
+            {deleteConfirm && (
+                <ConfirmDialog
+                    isOpen={!!deleteConfirm}
+                    onClose={handleDeleteCancel}
+                    onConfirm={handleDeleteConfirm}
+                    title="Delete User"
+                    message={`Are you sure you want to delete user ${deleteConfirm.username}? This action cannot be undone.`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
+            )}
         </div>
     );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import transactionService, { Transaction, CreateTransactionData } from '../services/transactionService';
 import fiiService, { FII } from '../services/fiiService';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import TransactionForm from '../components/TransactionForm';
 import '../styles/fiis.css';
 
@@ -13,6 +14,8 @@ const TransactionsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -79,18 +82,28 @@ const TransactionsPage: React.FC = () => {
         }
     };
 
-    const handleDelete = async (pk: number) => {
-        if (!window.confirm('Are you sure you want to delete this transaction?')) {
-            return;
-        }
+    const handleDeleteClick = (pk: number) => {
+        setDeleteConfirm(pk);
+    };
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm) return;
+
+        setIsDeleting(true);
         try {
-            await transactionService.delete(pk);
-            setTransactions(transactions.filter(t => t.pk !== pk));
+            await transactionService.delete(deleteConfirm);
+            setTransactions(transactions.filter(t => t.pk !== deleteConfirm));
+            setDeleteConfirm(null);
         } catch (err: any) {
             console.error('Error deleting Transaction:', err);
             setError('Failed to delete Transaction. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirm(null);
     };
 
     const getFiiTag = (fii_pk: number) => {
@@ -172,7 +185,7 @@ const TransactionsPage: React.FC = () => {
                                             <button
                                                 className="btn-delete"
                                                 title="Delete"
-                                                onClick={() => handleDelete(transaction.pk)}
+                                                onClick={() => handleDeleteClick(transaction.pk)}
                                             >
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -212,6 +225,20 @@ const TransactionsPage: React.FC = () => {
                     } : undefined}
                 />
             </Modal>
+
+            {deleteConfirm && (
+                <ConfirmDialog
+                    isOpen={!!deleteConfirm}
+                    onClose={handleDeleteCancel}
+                    onConfirm={handleDeleteConfirm}
+                    title="Delete Transaction"
+                    message="Are you sure you want to delete this transaction? This action cannot be undone."
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
+            )}
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import fiiService, { FII, CreateFIIData } from '../services/fiiService';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import FIIForm from '../components/FIIForm';
 import '../styles/fiis.css';
 
@@ -11,6 +12,8 @@ const FIIsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingFii, setEditingFii] = useState<FII | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ pk: number; tag: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadFiis();
@@ -75,18 +78,28 @@ const FIIsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (pk: number, tag: string) => {
-    if (!window.confirm(`Are you sure you want to delete ${tag}?`)) {
-      return;
-    }
+  const handleDeleteClick = (pk: number, tag: string) => {
+    setDeleteConfirm({ pk, tag });
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+
+    setIsDeleting(true);
     try {
-      await fiiService.delete(pk);
-      setFiis(fiis.filter(fii => fii.pk !== pk));
+      await fiiService.delete(deleteConfirm.pk);
+      setFiis(fiis.filter(fii => fii.pk !== deleteConfirm.pk));
+      setDeleteConfirm(null);
     } catch (err: any) {
       console.error('Error deleting FII:', err);
       setError('Failed to delete FII. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm(null);
   };
 
   if (loading) {
@@ -144,7 +157,7 @@ const FIIsPage: React.FC = () => {
                     <button
                       className="btn-delete"
                       title="Delete"
-                      onClick={() => handleDelete(fii.pk, fii.tag)}
+                      onClick={() => handleDeleteClick(fii.pk, fii.tag)}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -180,6 +193,20 @@ const FIIsPage: React.FC = () => {
           } : undefined}
         />
       </Modal>
+
+      {deleteConfirm && (
+        <ConfirmDialog
+          isOpen={!!deleteConfirm}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          title="Delete FII"
+          message={`Are you sure you want to delete ${deleteConfirm.tag}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          variant="danger"
+          isLoading={isDeleting}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import permissionService, { Permission, CreatePermissionData } from '../services/permissionService';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import PermissionForm from '../components/PermissionForm';
 import '../styles/fiis.css';
 
@@ -11,6 +12,8 @@ const PermissionsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ pk: number; resource: string; action: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         loadPermissions();
@@ -73,18 +76,28 @@ const PermissionsPage: React.FC = () => {
         }
     };
 
-    const handleDelete = async (pk: number, resource: string, action: string) => {
-        if (!window.confirm(`Are you sure you want to delete ${resource}:${action}?`)) {
-            return;
-        }
+    const handleDeleteClick = (pk: number, resource: string, action: string) => {
+        setDeleteConfirm({ pk, resource, action });
+    };
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm) return;
+
+        setIsDeleting(true);
         try {
-            await permissionService.delete(pk);
-            setPermissions(permissions.filter(permission => permission.pk !== pk));
+            await permissionService.delete(deleteConfirm.pk);
+            setPermissions(permissions.filter(permission => permission.pk !== deleteConfirm.pk));
+            setDeleteConfirm(null);
         } catch (err: any) {
             console.error('Error deleting Permission:', err);
             setError('Failed to delete Permission. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirm(null);
     };
 
     if (loading) {
@@ -142,7 +155,7 @@ const PermissionsPage: React.FC = () => {
                                         <button
                                             className="btn-delete"
                                             title="Delete"
-                                            onClick={() => handleDelete(permission.pk, permission.resource, permission.action)}
+                                            onClick={() => handleDeleteClick(permission.pk, permission.resource, permission.action)}
                                         >
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -178,6 +191,20 @@ const PermissionsPage: React.FC = () => {
                     } : undefined}
                 />
             </Modal>
+
+            {deleteConfirm && (
+                <ConfirmDialog
+                    isOpen={!!deleteConfirm}
+                    onClose={handleDeleteCancel}
+                    onConfirm={handleDeleteConfirm}
+                    title="Delete Permission"
+                    message={`Are you sure you want to delete permission ${deleteConfirm.resource}:${deleteConfirm.action}? This action cannot be undone.`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    variant="danger"
+                    isLoading={isDeleting}
+                />
+            )}
         </div>
     );
 };
