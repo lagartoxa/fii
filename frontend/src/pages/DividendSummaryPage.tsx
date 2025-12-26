@@ -121,26 +121,52 @@ const DividendSummaryPage: React.FC = () => {
                         <thead>
                             <tr>
                                 <th>FII</th>
-                                <th>Nome</th>
-                                <th>Quantidade de Pagamentos</th>
+                                <th>Data de Pagamento</th>
+                                <th>Valor por Cota</th>
+                                <th>Cotas Elegíveis</th>
                                 <th>Total Recebido</th>
                             </tr>
                         </thead>
                         <tbody>
                             {summary.fiis.map(fii => (
-                                <tr key={fii.fii_pk}>
-                                    <td className="tag">{fii.fii_tag}</td>
-                                    <td>{fii.fii_name}</td>
-                                    <td style={{ textAlign: 'center' }}>{fii.dividend_count}</td>
-                                    <td style={{ textAlign: 'right', fontWeight: 500 }}>
-                                        R$ {Number(fii.total_amount).toFixed(2)}
-                                    </td>
-                                </tr>
+                                <React.Fragment key={fii.fii_pk}>
+                                    {fii.dividends.map((dividend, index) => (
+                                        <tr key={dividend.dividend_pk}>
+                                            {index === 0 && (
+                                                <td
+                                                    className="tag"
+                                                    rowSpan={fii.dividends.length}
+                                                    style={{ verticalAlign: 'middle' }}
+                                                >
+                                                    {fii.fii_tag}
+                                                </td>
+                                            )}
+                                            <td>{dividend.payment_date.split('-').reverse().join('/')}</td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                R$ {Number(dividend.amount_per_unit).toFixed(4)}
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>{dividend.units_held}</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 500 }}>
+                                                R$ {Number(dividend.total_amount).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {fii.dividends.length > 1 && (
+                                        <tr style={{ backgroundColor: '#f8fafc', fontWeight: 500 }}>
+                                            <td colSpan={3} style={{ textAlign: 'right', paddingRight: '20px' }}>
+                                                Subtotal {fii.fii_tag}:
+                                            </td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                R$ {Number(fii.total_amount).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
                             ))}
                         </tbody>
                         <tfoot>
-                            <tr style={{ fontWeight: 'bold', backgroundColor: '#f8fafc' }}>
-                                <td colSpan={3} style={{ textAlign: 'right', paddingRight: '20px' }}>
+                            <tr style={{ fontWeight: 'bold', backgroundColor: '#e8f4f8' }}>
+                                <td colSpan={4} style={{ textAlign: 'right', paddingRight: '20px' }}>
                                     Total Geral:
                                 </td>
                                 <td style={{ textAlign: 'right', fontSize: '16px' }}>

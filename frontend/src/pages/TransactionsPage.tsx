@@ -98,6 +98,13 @@ const TransactionsPage: React.FC = () => {
         return fii ? fii.tag : 'Unknown';
     };
 
+    const formatDate = (dateString: string): string => {
+        // Parse date as YYYY-MM-DD and format as dd/MM/yyyy
+        // Avoid timezone issues by parsing components directly
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
     if (loading) {
         return (
             <div className="fiis-page">
@@ -145,7 +152,7 @@ const TransactionsPage: React.FC = () => {
                                             {transaction.transaction_type.toUpperCase()}
                                         </span>
                                     </td>
-                                    <td>{new Date(transaction.transaction_date).toLocaleDateString('pt-BR')}</td>
+                                    <td>{formatDate(transaction.transaction_date)}</td>
                                     <td>{transaction.quantity}</td>
                                     <td>R$ {Number(transaction.price_per_unit).toFixed(2)}</td>
                                     <td>R$ {Number(transaction.total_amount).toFixed(2)}</td>

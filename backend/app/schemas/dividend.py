@@ -54,11 +54,24 @@ class DividendResponse(BaseModel):
         from_attributes = True
 
 
+class DividendDetail(BaseModel):
+    """Schema for individual dividend detail in monthly summary."""
+    dividend_pk: int
+    payment_date: date
+    amount_per_unit: Decimal
+    units_held: int
+    total_amount: Decimal
+
+    class Config:
+        from_attributes = True
+
+
 class FiiMonthlySummary(BaseModel):
     """Schema for FII monthly dividend summary."""
     fii_pk: int
     fii_tag: str
     fii_name: str
+    dividends: list[DividendDetail]
     total_amount: Decimal
     dividend_count: int
 

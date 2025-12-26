@@ -370,6 +370,8 @@ def get_monthly_summary(
     )
 
     # Group by FII and calculate totals
+    from app.schemas.dividend import DividendDetail
+
     fii_summary = {}
     for dividend, fii in dividends:
         # Calculate units_held for this dividend
@@ -393,10 +395,21 @@ def get_monthly_summary(
                 'fii_pk': fii.pk,
                 'fii_tag': fii.tag,
                 'fii_name': fii.name,
+                'dividends': [],
                 'total_amount': Decimal('0'),
                 'dividend_count': 0
             }
 
+        # Add dividend detail
+        fii_summary[fii.pk]['dividends'].append(
+            DividendDetail(
+                dividend_pk=dividend.pk,
+                payment_date=dividend.payment_date,
+                amount_per_unit=dividend.amount_per_unit,
+                units_held=units_held,
+                total_amount=dividend_total
+            )
+        )
         fii_summary[fii.pk]['total_amount'] += dividend_total
         fii_summary[fii.pk]['dividend_count'] += 1
 

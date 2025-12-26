@@ -103,6 +103,13 @@ const DividendsPage: React.FC = () => {
         return fii?.cut_day;
     };
 
+    const formatDate = (dateString: string): string => {
+        // Parse date as YYYY-MM-DD and format as dd/MM/yyyy
+        // Avoid timezone issues by parsing components directly
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
     const calculateCutDate = (paymentDate: string, cutDay: number | undefined): string => {
         if (!cutDay) return 'N/A';
 
@@ -163,7 +170,7 @@ const DividendsPage: React.FC = () => {
                                 return (
                                     <tr key={dividend.pk}>
                                         <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
-                                        <td>{new Date(dividend.payment_date).toLocaleDateString('pt-BR')}</td>
+                                        <td>{formatDate(dividend.payment_date)}</td>
                                         <td>{cutDate}</td>
                                         <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
                                         <td className="actions">

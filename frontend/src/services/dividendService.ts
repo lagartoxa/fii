@@ -23,10 +23,19 @@ export interface UpdateDividendData {
     amount_per_unit?: number;
 }
 
+export interface DividendDetail {
+    dividend_pk: number;
+    payment_date: string;
+    amount_per_unit: number;
+    units_held: number;
+    total_amount: number;
+}
+
 export interface FiiMonthlySummary {
     fii_pk: number;
     fii_tag: string;
     fii_name: string;
+    dividends: DividendDetail[];
     total_amount: number;
     dividend_count: number;
 }
