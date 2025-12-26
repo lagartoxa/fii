@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
           <img src="/lagartoxa-logo.png" alt="Logo" />
         </div>
         <div className="login-form-container">
-          <h1 className="login-title">FII Portfolio Manager</h1>
+          <h1 className="login-title">Fundos Imobiliários</h1>
           <p className="login-subtitle">Sign in to manage your investments</p>
 
           <form onSubmit={handleSubmit} className="login-form">
