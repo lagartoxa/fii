@@ -361,6 +361,7 @@ def get_monthly_summary(
             and_(
                 Dividend.user_pk == current_user.pk,
                 Dividend.rm_timestamp.is_(None),
+                Fii.rm_timestamp.is_(None),  # Exclude deleted FIIs
                 extract('year', Dividend.payment_date) == year,
                 extract('month', Dividend.payment_date) == month
             )

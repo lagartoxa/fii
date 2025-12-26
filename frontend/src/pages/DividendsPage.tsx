@@ -163,35 +163,37 @@ const DividendsPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {dividends.map(dividend => {
-                                const cutDay = getFiiCutDay(dividend.fii_pk);
-                                const cutDate = calculateCutDate(dividend.payment_date, cutDay);
+                            {dividends
+                                .filter(dividend => fiis.some(fii => fii.pk === dividend.fii_pk))
+                                .map(dividend => {
+                                    const cutDay = getFiiCutDay(dividend.fii_pk);
+                                    const cutDate = calculateCutDate(dividend.payment_date, cutDay);
 
-                                return (
-                                    <tr key={dividend.pk}>
-                                        <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
-                                        <td>{formatDate(dividend.payment_date)}</td>
-                                        <td>{cutDate}</td>
-                                        <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
-                                        <td className="actions">
-                                        <button
-                                            className="btn-edit"
-                                            title="Edit"
-                                            onClick={() => handleOpenEditModal(dividend)}
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            className="btn-delete"
-                                            title="Delete"
-                                            onClick={() => handleDelete(dividend.pk)}
-                                        >
-                                            🗑️
-                                        </button>
-                                    </td>
-                                </tr>
-                                );
-                            })}
+                                    return (
+                                        <tr key={dividend.pk}>
+                                            <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
+                                            <td>{formatDate(dividend.payment_date)}</td>
+                                            <td>{cutDate}</td>
+                                            <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
+                                            <td className="actions">
+                                            <button
+                                                className="btn-edit"
+                                                title="Edit"
+                                                onClick={() => handleOpenEditModal(dividend)}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                className="btn-delete"
+                                                title="Delete"
+                                                onClick={() => handleDelete(dividend.pk)}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
                         </tbody>
                     </table>
                 </div>

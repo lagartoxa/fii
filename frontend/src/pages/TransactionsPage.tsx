@@ -144,36 +144,38 @@ const TransactionsPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions.map(transaction => (
-                                <tr key={transaction.pk}>
-                                    <td className="tag">{getFiiTag(transaction.fii_pk)}</td>
-                                    <td>
-                                        <span className={`badge ${transaction.transaction_type}`}>
-                                            {transaction.transaction_type.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td>{formatDate(transaction.transaction_date)}</td>
-                                    <td>{transaction.quantity}</td>
-                                    <td>R$ {Number(transaction.price_per_unit).toFixed(2)}</td>
-                                    <td>R$ {Number(transaction.total_amount).toFixed(2)}</td>
-                                    <td className="actions">
-                                        <button
-                                            className="btn-edit"
-                                            title="Edit"
-                                            onClick={() => handleOpenEditModal(transaction)}
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            className="btn-delete"
-                                            title="Delete"
-                                            onClick={() => handleDelete(transaction.pk)}
-                                        >
-                                            🗑️
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {transactions
+                                .filter(transaction => fiis.some(fii => fii.pk === transaction.fii_pk))
+                                .map(transaction => (
+                                    <tr key={transaction.pk}>
+                                        <td className="tag">{getFiiTag(transaction.fii_pk)}</td>
+                                        <td>
+                                            <span className={`badge ${transaction.transaction_type}`}>
+                                                {transaction.transaction_type.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td>{formatDate(transaction.transaction_date)}</td>
+                                        <td>{transaction.quantity}</td>
+                                        <td>R$ {Number(transaction.price_per_unit).toFixed(2)}</td>
+                                        <td>R$ {Number(transaction.total_amount).toFixed(2)}</td>
+                                        <td className="actions">
+                                            <button
+                                                className="btn-edit"
+                                                title="Edit"
+                                                onClick={() => handleOpenEditModal(transaction)}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                className="btn-delete"
+                                                title="Delete"
+                                                onClick={() => handleDelete(transaction.pk)}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
