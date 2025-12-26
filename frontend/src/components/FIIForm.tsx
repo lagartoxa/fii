@@ -18,8 +18,7 @@ const FIIForm: React.FC<FIIFormProps> = ({
   const [formData, setFormData] = useState<CreateFIIData>({
     tag: '',
     name: '',
-    sector: '',
-    cut_day: undefined
+    sector: ''
   });
 
   useEffect(() => {
@@ -56,8 +55,7 @@ const FIIForm: React.FC<FIIFormProps> = ({
     const dataToSubmit: CreateFIIData = {
       tag: formData.tag.toUpperCase(),
       name: formData.name,
-      sector: formData.sector || undefined,
-      cut_day: formData.cut_day || undefined
+      sector: formData.sector || undefined
     };
 
     await onSubmit(dataToSubmit);
@@ -129,24 +127,6 @@ const FIIForm: React.FC<FIIFormProps> = ({
           <option value="Comercial">Comercial</option>
           <option value="Outros">Outros</option>
         </select>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="cut_day">Cut Day</label>
-        <input
-          type="number"
-          id="cut_day"
-          value={formData.cut_day || ''}
-          onChange={(e) => {
-            const value = e.target.value;
-            handleChange('cut_day', value === '' ? undefined : parseInt(value));
-          }}
-          disabled={isLoading}
-          placeholder="1-31"
-          min={1}
-          max={31}
-        />
-        <span className="help-text">Day of month for dividend cut-off (1-31). Units held will be calculated automatically based on transactions up to this day each month.</span>
       </div>
 
       <div className="form-actions">

@@ -13,7 +13,6 @@ class FiiBase(BaseModel):
     tag: str = Field(..., min_length=1, max_length=20, description="FII tag/ticker symbol")
     name: str = Field(..., min_length=1, max_length=255, description="FII full name")
     sector: Optional[str] = Field(None, max_length=100, description="FII sector")
-    cut_day: Optional[int] = Field(None, ge=1, le=31, description="Day of month for dividend cut-off (1-31)")
 
     @field_validator('tag')
     @classmethod
@@ -32,7 +31,6 @@ class FiiUpdate(BaseModel):
     tag: Optional[str] = Field(None, min_length=1, max_length=20)
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     sector: Optional[str] = Field(None, max_length=100)
-    cut_day: Optional[int] = Field(None, ge=1, le=31, description="Day of month for dividend cut-off (1-31)")
 
     @field_validator('tag')
     @classmethod

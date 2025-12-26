@@ -121,7 +121,6 @@ const FIIsPage: React.FC = () => {
                 <th>Tag</th>
                 <th>Name</th>
                 <th>Sector</th>
-                <th>Cut Day</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -131,7 +130,6 @@ const FIIsPage: React.FC = () => {
                   <td className="tag">{fii.tag}</td>
                   <td>{fii.name}</td>
                   <td>{fii.sector || '-'}</td>
-                  <td>{fii.cut_day || '-'}</td>
                   <td className="actions">
                     <button
                       className="btn-edit"
@@ -172,8 +170,7 @@ const FIIsPage: React.FC = () => {
           initialData={editingFii ? {
             tag: editingFii.tag,
             name: editingFii.name,
-            sector: editingFii.sector,
-            cut_day: editingFii.cut_day
+            sector: editingFii.sector
           } : undefined}
         />
       </Modal>

@@ -66,6 +66,13 @@ class Dividend(BaseModel):
         comment="Reference date (ex-dividend date)"
     )
 
+    com_date: Mapped[Optional[date_type]] = mapped_column(
+        Date,
+        nullable=True,
+        index=True,
+        comment="Data COM - cut-off date for dividend eligibility"
+    )
+
     amount_per_unit: Mapped[Decimal] = mapped_column(
         Numeric(precision=10, scale=4),
         nullable=False,

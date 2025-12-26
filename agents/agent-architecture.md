@@ -124,13 +124,13 @@ You are designing the architecture for a Real Estate Investment Trust (REIT) man
 **Business Rules**
 - Monthly dividend calculation:
   - For a given FII and reference month:
-    - Consider all purchase transactions executed on or before the dividend cut-off date
-    - Exclude any units that were sold before the cut-off date
-    - The eligible quantity is the net number of units held at the cut-off date
+    - Consider all purchase transactions executed on or before the dividend COM date
+    - Exclude any units that were sold before the COM date
+    - The eligible quantity is the net number of units held at the COM date
   - The total dividend amount is calculated as:
     - eligible_quantity × dividend_amount_per_unit
   - For example:
-      Lets say I have the MXRF11 FII with cut day 30.
+      Lets say I have the MXRF11 FII with COM day 30 of every month (each dividend will have it's own individual COM date, I just simplified for this example).
       Lets say I buy:
       01/09 - 0 shares (0 accumulated)
       01/10 - 10 shares (10 accumulated)

@@ -6,7 +6,7 @@ export interface Dividend {
     fii_pk: number;
     payment_date: string;
     amount_per_unit: number;
-    units_held: number;
+    com_date?: string;
     created_at: string;
     updated_at: string;
 }
@@ -15,18 +15,21 @@ export interface CreateDividendData {
     fii_pk: number;
     payment_date: string;
     amount_per_unit: number;
+    com_date?: string;
 }
 
 export interface UpdateDividendData {
     fii_pk?: number;
     payment_date?: string;
     amount_per_unit?: number;
+    com_date?: string;
 }
 
 export interface DividendDetail {
     dividend_pk: number;
     payment_date: string;
     amount_per_unit: number;
+    com_date?: string;
     units_held: number;
     total_amount: number;
 }

@@ -55,13 +55,6 @@ class Fii(BaseModel):
         comment="FII sector (commercial, residential, logistics, hybrid, etc.)"
     )
 
-    cut_day: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        nullable=True,
-        index=True,
-        comment="Day of month for dividend cut-off (1-31)"
-    )
-
     # Relationships
     fii_transactions = relationship(
         "FiiTransaction",

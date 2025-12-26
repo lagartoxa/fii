@@ -22,7 +22,8 @@ const DividendForm: React.FC<DividendFormProps> = ({
     const [formData, setFormData] = useState<CreateDividendData>({
         fii_pk: 0,
         payment_date: '',
-        amount_per_unit: 0
+        amount_per_unit: 0,
+        com_date: ''
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -65,7 +66,8 @@ const DividendForm: React.FC<DividendFormProps> = ({
         const dataToSubmit: CreateDividendData = {
             fii_pk: formData.fii_pk,
             payment_date: formData.payment_date,
-            amount_per_unit: formData.amount_per_unit
+            amount_per_unit: formData.amount_per_unit,
+            com_date: formData.com_date
         };
 
         await onSubmit(dataToSubmit);
@@ -153,6 +155,21 @@ const DividendForm: React.FC<DividendFormProps> = ({
                     className={errors.amount_per_unit ? 'error' : ''}
                 />
                 {errors.amount_per_unit && <span className="error-text">{errors.amount_per_unit}</span>}
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="com_date">
+                    Data COM
+                </label>
+                <DateInput
+                    id="com_date"
+                    value={formData.com_date || ''}
+                    onChange={(value) => handleChange('com_date', value)}
+                    disabled={isLoading}
+                    className={errors.com_date ? 'error' : ''}
+                />
+                <span className="help-text">Data de corte para elegibilidade do dividendo</span>
+                {errors.com_date && <span className="error-text">{errors.com_date}</span>}
             </div>
 
             <div className="form-actions">

@@ -98,32 +98,11 @@ const DividendsPage: React.FC = () => {
         return fii ? fii.tag : 'Unknown';
     };
 
-    const getFiiCutDay = (fii_pk: number): number | undefined => {
-        const fii = fiis.find(f => f.pk === fii_pk);
-        return fii?.cut_day;
-    };
-
     const formatDate = (dateString: string): string => {
         // Parse date as YYYY-MM-DD and format as dd/MM/yyyy
         // Avoid timezone issues by parsing components directly
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
-    };
-
-    const calculateCutDate = (paymentDate: string, cutDay: number | undefined): string => {
-        if (!cutDay) return 'N/A';
-
-        const payment = new Date(paymentDate);
-        const year = payment.getFullYear();
-        const month = payment.getMonth(); // 0-indexed
-
-        // Cut date is in the same month as payment date
-        // Handle months with fewer days
-        const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-        const actualDay = Math.min(cutDay, lastDayOfMonth);
-
-        const cutDate = new Date(year, month, actualDay);
-        return cutDate.toLocaleDateString('pt-BR');
     };
 
     if (loading) {
@@ -157,7 +136,7 @@ const DividendsPage: React.FC = () => {
                             <tr>
                                 <th>FII</th>
                                 <th>Payment Date</th>
-                                <th>Cut Date</th>
+                                <th>Data COM</th>
                                 <th>Amount/Unit</th>
                                 <th>Actions</th>
                             </tr>
@@ -166,14 +145,11 @@ const DividendsPage: React.FC = () => {
                             {dividends
                                 .filter(dividend => fiis.some(fii => fii.pk === dividend.fii_pk))
                                 .map(dividend => {
-                                    const cutDay = getFiiCutDay(dividend.fii_pk);
-                                    const cutDate = calculateCutDate(dividend.payment_date, cutDay);
-
                                     return (
                                         <tr key={dividend.pk}>
                                             <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
                                             <td>{formatDate(dividend.payment_date)}</td>
-                                            <td>{cutDate}</td>
+                                            <td>{dividend.com_date ? formatDate(dividend.com_date) : 'N/A'}</td>
                                             <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
                                             <td className="actions">
                                             <button
@@ -217,7 +193,8 @@ const DividendsPage: React.FC = () => {
                     initialData={editingDividend ? {
                         fii_pk: editingDividend.fii_pk,
                         payment_date: editingDividend.payment_date,
-                        amount_per_unit: editingDividend.amount_per_unit
+                        amount_per_unit: editingDividend.amount_per_unit,
+                        com_date: editingDividend.com_date
                     } : undefined}
                 />
             </Modal>

@@ -2,7 +2,7 @@
 Dividend CRUD API endpoints.
 """
 
-from datetime import date, timedelta
+from datetime import date
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -19,75 +19,44 @@ from app.schemas.dividend import DividendCreate, DividendResponse, DividendUpdat
 router = APIRouter()
 
 
-def _calculate_cut_date(payment_date: date, cut_day: int) -> date:
-    """
-    Calculate the cut-off date based on payment date and cut day of month.
-
-    The cut_day represents the day of the PAYMENT MONTH up to which shares must be held.
-    For example, if dividend is paid on 30/09 and cut_day is 30, then cut_date is 30/09.
-    All shares bought on or before 30/09 are counted for that dividend.
-
-    Args:
-        payment_date: Date dividend was paid
-        cut_day: Day of month for cut-off (1-31) in the payment month
-
-    Returns:
-        Calculated cut-off date (in the same month as payment)
-    """
-    year = payment_date.year
-    month = payment_date.month
-
-    # Handle months with fewer days (e.g., cut_day=31 but February only has 28/29)
-    if month == 12:
-        next_month = date(year + 1, 1, 1)
-    else:
-        next_month = date(year, month + 1, 1)
-    last_day_of_month = (next_month - timedelta(days=1)).day
-
-    # Use the minimum of cut_day and last_day_of_month
-    actual_day = min(cut_day, last_day_of_month)
-
-    return date(year, month, actual_day)
-
-
 def _calculate_units_held(
     db: Session,
     user_pk: int,
     fii_pk: int,
-    cut_date: date
+    com_date: date
 ) -> int:
     """
-    Calculate units held on cut_date based on transactions.
+    Calculate units held on COM date based on transactions.
 
-    Rule: Share must be bought before or at cut_date and sold only after cut_date.
+    Rule: Share must be bought before or at COM date and sold only after COM date.
 
     Args:
         db: Database session
         user_pk: User primary key
         fii_pk: FII primary key
-        cut_date: Cut-off date for dividend eligibility
+        com_date: Data COM - cut-off date for dividend eligibility
 
     Returns:
         Number of units held that are eligible for dividend
     """
-    # Get all transactions up to and including cut_date
+    # Get all transactions up to and including COM date
     buy_transactions = db.query(FiiTransaction).filter(
         and_(
             FiiTransaction.user_pk == user_pk,
             FiiTransaction.fii_pk == fii_pk,
             FiiTransaction.transaction_type == 'buy',
-            FiiTransaction.transaction_date <= cut_date,
+            FiiTransaction.transaction_date <= com_date,
             FiiTransaction.rm_timestamp.is_(None)
         )
     ).all()
 
-    # Get all sell transactions up to and including cut_date
+    # Get all sell transactions up to and including COM date
     sell_transactions = db.query(FiiTransaction).filter(
         and_(
             FiiTransaction.user_pk == user_pk,
             FiiTransaction.fii_pk == fii_pk,
             FiiTransaction.transaction_type == 'sell',
-            FiiTransaction.transaction_date <= cut_date,
+            FiiTransaction.transaction_date <= com_date,
             FiiTransaction.rm_timestamp.is_(None)
         )
     ).all()
@@ -140,6 +109,7 @@ def create_dividend(
             fii_pk=dividend_data.fii_pk,
             payment_date=dividend_data.payment_date,
             amount_per_unit=dividend_data.amount_per_unit,
+            com_date=dividend_data.com_date,
             created_by_pk=current_user.pk,
             updated_by_pk=current_user.pk
         )
@@ -256,32 +226,16 @@ def update_dividend(
         # Get update data
         update_dict = dividend_data.model_dump(exclude_unset=True)
 
-        # Determine which values to use for calculation
-        fii_pk_for_calc = update_dict.get('fii_pk', dividend.fii_pk)
-        payment_date_for_calc = update_dict.get('payment_date', dividend.payment_date)
-        amount_per_unit_for_calc = update_dict.get('amount_per_unit', dividend.amount_per_unit)
+        # Verify FII exists if being updated
+        if 'fii_pk' in update_dict:
+            with FiiRepository(db) as fii_repo:
+                fii = fii_repo.get_by_pk(update_dict['fii_pk'])
 
-        # Verify FII exists if being updated and get cut_day from FII
-        with FiiRepository(db) as fii_repo:
-            fii = fii_repo.get_by_pk(fii_pk_for_calc)
-
-            if not fii:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="FII not found"
-                )
-
-            # Recalculate units_held if FII has cut_day
-            if fii.cut_day:
-                # Calculate the actual cut date based on payment date and FII's cut day
-                cut_date = _calculate_cut_date(payment_date_for_calc, fii.cut_day)
-                units_held = _calculate_units_held(
-                    db=db,
-                    user_pk=current_user.pk,
-                    fii_pk=fii_pk_for_calc,
-                    cut_date=cut_date
-                )
-                update_dict['units_held'] = units_held
+                if not fii:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="FII not found"
+                    )
 
         # Update dividend
         updated_dividend = dividend_repo.update(pk, DividendUpdate(**update_dict))
@@ -375,17 +329,16 @@ def get_monthly_summary(
 
     fii_summary = {}
     for dividend, fii in dividends:
-        # Calculate units_held for this dividend
-        if fii.cut_day:
-            cut_date = _calculate_cut_date(dividend.payment_date, fii.cut_day)
+        # Calculate units_held for this dividend using com_date
+        if dividend.com_date:
             units_held = _calculate_units_held(
                 db=db,
                 user_pk=current_user.pk,
                 fii_pk=dividend.fii_pk,
-                cut_date=cut_date
+                com_date=dividend.com_date
             )
         else:
-            units_held = 0  # No cut_day configured, can't calculate
+            units_held = 0  # No com_date configured, can't calculate
 
         # Calculate total for this dividend
         dividend_total = dividend.amount_per_unit * units_held
@@ -407,6 +360,7 @@ def get_monthly_summary(
                 dividend_pk=dividend.pk,
                 payment_date=dividend.payment_date,
                 amount_per_unit=dividend.amount_per_unit,
+                com_date=dividend.com_date,
                 units_held=units_held,
                 total_amount=dividend_total
             )
