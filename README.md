@@ -1,4 +1,4 @@
-# FII Portfolio Manager
+# Fundos Imobiliários
 
 Manage your Brazilian Real Estate Investment Trusts (Fundos Imobiliários - FIIs) portfolio easily.
 
