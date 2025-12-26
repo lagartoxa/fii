@@ -1,0 +1,33 @@
+import logging
+import sys
+from pathlib import Path
+
+from app.core.config import settings
+
+
+def setup_logging() -> None:
+    """Configure application logging."""
+
+    # Create logs directory if it doesn't exist
+    log_file_path = Path(settings.LOG_FILE)
+    log_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Configure root logger
+    logging.basicConfig(
+        level=getattr(logging, settings.LOG_LEVEL.upper()),
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(settings.LOG_FILE)
+        ]
+    )
+
+    # Set specific log levels for third-party libraries
+    logging.getLogger("uvicorn").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    logging.getLogger("celery").setLevel(logging.INFO)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Get a logger instance."""
+    return logging.getLogger(name)

@@ -1,0 +1,198 @@
+import React, { useState, useEffect } from 'react';
+import dividendService, { Dividend, CreateDividendData } from '../services/dividendService';
+import fiiService, { FII } from '../services/fiiService';
+import Modal from '../components/Modal';
+import DividendForm from '../components/DividendForm';
+import '../styles/fiis.css';
+
+const DividendsPage: React.FC = () => {
+    const [dividends, setDividends] = useState<Dividend[]>([]);
+    const [fiis, setFiis] = useState<FII[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editingDividend, setEditingDividend] = useState<Dividend | null>(null);
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            const [dividendsData, fiisData] = await Promise.all([
+                dividendService.getAll(),
+                fiiService.getAll()
+            ]);
+            setDividends(dividendsData);
+            setFiis(fiisData);
+        } catch (err: any) {
+            console.error('Error loading data:', err);
+            setError('Failed to load data. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenModal = () => {
+        setError('');
+        setEditingDividend(null);
+        setIsModalOpen(true);
+    };
+
+    const handleOpenEditModal = (dividend: Dividend) => {
+        setError('');
+        setEditingDividend(dividend);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        if (!isSaving) {
+            setError('');
+            setEditingDividend(null);
+            setIsModalOpen(false);
+        }
+    };
+
+    const handleSubmit = async (data: CreateDividendData) => {
+        try {
+            setIsSaving(true);
+            setError('');
+
+            if (editingDividend) {
+                const updatedDividend = await dividendService.update(editingDividend.pk, data);
+                setDividends(dividends.map(d => d.pk === updatedDividend.pk ? updatedDividend : d));
+            } else {
+                const newDividend = await dividendService.create(data);
+                setDividends([...dividends, newDividend]);
+            }
+
+            setIsModalOpen(false);
+        } catch (err: any) {
+            console.error(`Error ${editingDividend ? 'updating' : 'creating'} Dividend:`, err);
+            setError(err.response?.data?.detail || `Failed to ${editingDividend ? 'update' : 'create'} Dividend. Please try again.`);
+            throw err;
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDelete = async (pk: number) => {
+        if (!window.confirm('Are you sure you want to delete this dividend?')) {
+            return;
+        }
+
+        try {
+            await dividendService.delete(pk);
+            setDividends(dividends.filter(d => d.pk !== pk));
+        } catch (err: any) {
+            console.error('Error deleting Dividend:', err);
+            setError('Failed to delete Dividend. Please try again.');
+        }
+    };
+
+    const getFiiTag = (fii_pk: number) => {
+        const fii = fiis.find(f => f.pk === fii_pk);
+        return fii ? fii.tag : 'Unknown';
+    };
+
+    if (loading) {
+        return (
+            <div className="fiis-page">
+                <div className="loading">Loading Dividends...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="fiis-page">
+            <div className="page-header">
+                <h1>Dividends</h1>
+                <button className="btn-primary" onClick={handleOpenModal}>
+                    + Add New Dividend
+                </button>
+            </div>
+
+            {dividends.length === 0 ? (
+                <div className="empty-state">
+                    <p>No Dividends registered yet.</p>
+                    <button className="btn-primary" onClick={handleOpenModal}>
+                        Add your first Dividend
+                    </button>
+                </div>
+            ) : (
+                <div className="fiis-table-container">
+                    <table className="fiis-table">
+                        <thead>
+                            <tr>
+                                <th>FII</th>
+                                <th>Payment Date</th>
+                                <th>Amount/Unit</th>
+                                <th>Units Held</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {dividends.map(dividend => (
+                                <tr key={dividend.pk}>
+                                    <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
+                                    <td>{new Date(dividend.payment_date).toLocaleDateString('pt-BR')}</td>
+                                    <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
+                                    <td>{dividend.units_held}</td>
+                                    <td>R$ {Number(dividend.total_amount).toFixed(2)}</td>
+                                    <td className="actions">
+                                        <button
+                                            className="btn-edit"
+                                            title="Edit"
+                                            onClick={() => handleOpenEditModal(dividend)}
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            className="btn-delete"
+                                            title="Delete"
+                                            onClick={() => handleDelete(dividend.pk)}
+                                        >
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                title={editingDividend ? 'Edit Dividend' : 'Add New Dividend'}
+            >
+                {error && (
+                    <div className="error-message" role="alert">
+                        {error}
+                    </div>
+                )}
+                <DividendForm
+                    onSubmit={handleSubmit}
+                    onCancel={handleCloseModal}
+                    isLoading={isSaving}
+                    fiis={fiis}
+                    initialData={editingDividend ? {
+                        fii_pk: editingDividend.fii_pk,
+                        payment_date: editingDividend.payment_date,
+                        reference_date: editingDividend.reference_date,
+                        amount_per_unit: editingDividend.amount_per_unit,
+                        units_held: editingDividend.units_held,
+                        total_amount: editingDividend.total_amount
+                    } : undefined}
+                />
+            </Modal>
+        </div>
+    );
+};
+
+export default DividendsPage;
