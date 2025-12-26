@@ -5,6 +5,7 @@ export interface FII {
   tag: string;
   name: string;
   sector?: string;
+  cut_day?: number;
   created_at: string;
   updated_at: string;
 }
@@ -13,12 +14,14 @@ export interface CreateFIIData {
   tag: string;
   name: string;
   sector?: string;
+  cut_day?: number;
 }
 
 export interface UpdateFIIData {
   tag?: string;
   name?: string;
   sector?: string;
+  cut_day?: number;
 }
 
 const fiiService = {

@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import FIIsPage from './pages/FIIsPage';
 import TransactionsPage from './pages/TransactionsPage';
 import DividendsPage from './pages/DividendsPage';
+import DividendSummaryPage from './pages/DividendSummaryPage';
 import RolesPage from './pages/RolesPage';
 import PermissionsPage from './pages/PermissionsPage';
 import UsersPage from './pages/UsersPage';
@@ -62,6 +63,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <DividendsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dividends/summary"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <DividendSummaryPage />
               </Layout>
             </ProtectedRoute>
           }

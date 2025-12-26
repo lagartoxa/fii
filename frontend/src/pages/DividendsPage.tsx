@@ -98,6 +98,27 @@ const DividendsPage: React.FC = () => {
         return fii ? fii.tag : 'Unknown';
     };
 
+    const getFiiCutDay = (fii_pk: number): number | undefined => {
+        const fii = fiis.find(f => f.pk === fii_pk);
+        return fii?.cut_day;
+    };
+
+    const calculateCutDate = (paymentDate: string, cutDay: number | undefined): string => {
+        if (!cutDay) return 'N/A';
+
+        const payment = new Date(paymentDate);
+        const year = payment.getFullYear();
+        const month = payment.getMonth(); // 0-indexed
+
+        // Cut date is in the same month as payment date
+        // Handle months with fewer days
+        const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+        const actualDay = Math.min(cutDay, lastDayOfMonth);
+
+        const cutDate = new Date(year, month, actualDay);
+        return cutDate.toLocaleDateString('pt-BR');
+    };
+
     if (loading) {
         return (
             <div className="fiis-page">
@@ -129,21 +150,23 @@ const DividendsPage: React.FC = () => {
                             <tr>
                                 <th>FII</th>
                                 <th>Payment Date</th>
+                                <th>Cut Date</th>
                                 <th>Amount/Unit</th>
-                                <th>Units Held</th>
-                                <th>Total</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {dividends.map(dividend => (
-                                <tr key={dividend.pk}>
-                                    <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
-                                    <td>{new Date(dividend.payment_date).toLocaleDateString('pt-BR')}</td>
-                                    <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
-                                    <td>{dividend.units_held}</td>
-                                    <td>R$ {Number(dividend.total_amount).toFixed(2)}</td>
-                                    <td className="actions">
+                            {dividends.map(dividend => {
+                                const cutDay = getFiiCutDay(dividend.fii_pk);
+                                const cutDate = calculateCutDate(dividend.payment_date, cutDay);
+
+                                return (
+                                    <tr key={dividend.pk}>
+                                        <td className="tag">{getFiiTag(dividend.fii_pk)}</td>
+                                        <td>{new Date(dividend.payment_date).toLocaleDateString('pt-BR')}</td>
+                                        <td>{cutDate}</td>
+                                        <td>R$ {Number(dividend.amount_per_unit).toFixed(4)}</td>
+                                        <td className="actions">
                                         <button
                                             className="btn-edit"
                                             title="Edit"
@@ -160,7 +183,8 @@ const DividendsPage: React.FC = () => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -184,10 +208,7 @@ const DividendsPage: React.FC = () => {
                     initialData={editingDividend ? {
                         fii_pk: editingDividend.fii_pk,
                         payment_date: editingDividend.payment_date,
-                        reference_date: editingDividend.reference_date,
-                        amount_per_unit: editingDividend.amount_per_unit,
-                        units_held: editingDividend.units_held,
-                        total_amount: editingDividend.total_amount
+                        amount_per_unit: editingDividend.amount_per_unit
                     } : undefined}
                 />
             </Modal>

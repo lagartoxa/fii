@@ -206,7 +206,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 <input
                     type="text"
                     id="total_amount"
-                    value={formData.total_amount === 0 ? '' : formData.total_amount.toFixed(2)}
+                    value={formData.total_amount === 0 ? '' : Number(formData.total_amount).toFixed(2)}
                     disabled
                 />
                 <span className="help-text">Auto-calculated from quantity × price</span>

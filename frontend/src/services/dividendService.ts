@@ -5,10 +5,8 @@ export interface Dividend {
     user_pk: number;
     fii_pk: number;
     payment_date: string;
-    reference_date?: string;
     amount_per_unit: number;
     units_held: number;
-    total_amount: number;
     created_at: string;
     updated_at: string;
 }
@@ -16,19 +14,28 @@ export interface Dividend {
 export interface CreateDividendData {
     fii_pk: number;
     payment_date: string;
-    reference_date?: string;
     amount_per_unit: number;
-    units_held: number;
-    total_amount: number;
 }
 
 export interface UpdateDividendData {
     fii_pk?: number;
     payment_date?: string;
-    reference_date?: string;
     amount_per_unit?: number;
-    units_held?: number;
-    total_amount?: number;
+}
+
+export interface FiiMonthlySummary {
+    fii_pk: number;
+    fii_tag: string;
+    fii_name: string;
+    total_amount: number;
+    dividend_count: number;
+}
+
+export interface MonthlySummary {
+    year: number;
+    month: number;
+    fiis: FiiMonthlySummary[];
+    total: number;
 }
 
 const dividendService = {
@@ -54,6 +61,11 @@ const dividendService = {
 
     async delete(pk: number): Promise<void> {
         await api.delete(`/dividends/${pk}`);
+    },
+
+    async getMonthlySummary(year: number, month: number): Promise<MonthlySummary> {
+        const response = await api.get<MonthlySummary>(`/dividends/summary/monthly?year=${year}&month=${month}`);
+        return response.data;
     }
 };
 

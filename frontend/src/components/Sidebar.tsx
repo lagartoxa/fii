@@ -32,6 +32,12 @@ const Sidebar: React.FC = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/dividends/summary" className={({ isActive }) => isActive ? 'active' : ''}>
+              <span className="icon">📊</span>
+              <span className="label">Monthly Summary</span>
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/roles" className={({ isActive }) => isActive ? 'active' : ''}>
               <span className="icon">🎭</span>
               <span className="label">Roles</span>

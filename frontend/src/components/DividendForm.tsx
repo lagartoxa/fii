@@ -22,10 +22,7 @@ const DividendForm: React.FC<DividendFormProps> = ({
     const [formData, setFormData] = useState<CreateDividendData>({
         fii_pk: 0,
         payment_date: '',
-        reference_date: '',
-        amount_per_unit: 0,
-        units_held: 0,
-        total_amount: 0
+        amount_per_unit: 0
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -38,14 +35,6 @@ const DividendForm: React.FC<DividendFormProps> = ({
             setAmountInput(initialData.amount_per_unit ? String(initialData.amount_per_unit) : '');
         }
     }, [initialData]);
-
-    // Auto-calculate total_amount when units_held or amount_per_unit changes
-    useEffect(() => {
-        if (formData.units_held > 0 && formData.amount_per_unit > 0) {
-            const total = formData.units_held * formData.amount_per_unit;
-            setFormData(prev => ({ ...prev, total_amount: parseFloat(total.toFixed(2)) }));
-        }
-    }, [formData.units_held, formData.amount_per_unit]);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
@@ -62,10 +51,6 @@ const DividendForm: React.FC<DividendFormProps> = ({
             newErrors.amount_per_unit = 'Amount per unit must be greater than 0';
         }
 
-        if (formData.units_held <= 0) {
-            newErrors.units_held = 'Units held must be greater than 0';
-        }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -78,8 +63,9 @@ const DividendForm: React.FC<DividendFormProps> = ({
         }
 
         const dataToSubmit: CreateDividendData = {
-            ...formData,
-            reference_date: formData.reference_date || undefined
+            fii_pk: formData.fii_pk,
+            payment_date: formData.payment_date,
+            amount_per_unit: formData.amount_per_unit
         };
 
         await onSubmit(dataToSubmit);
@@ -131,16 +117,6 @@ const DividendForm: React.FC<DividendFormProps> = ({
             </div>
 
             <div className="form-group">
-                <label htmlFor="reference_date">Reference Date</label>
-                <DateInput
-                    id="reference_date"
-                    value={formData.reference_date}
-                    onChange={(value) => handleChange('reference_date', value)}
-                    disabled={isLoading}
-                />
-            </div>
-
-            <div className="form-group">
                 <label htmlFor="amount_per_unit">
                     Amount per Unit <span className="required">*</span>
                 </label>
@@ -177,39 +153,6 @@ const DividendForm: React.FC<DividendFormProps> = ({
                     className={errors.amount_per_unit ? 'error' : ''}
                 />
                 {errors.amount_per_unit && <span className="error-text">{errors.amount_per_unit}</span>}
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="units_held">
-                    Units Held <span className="required">*</span>
-                </label>
-                <input
-                    type="text"
-                    inputMode="numeric"
-                    id="units_held"
-                    value={formData.units_held === 0 ? '' : formData.units_held}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '' || /^\d+$/.test(value)) {
-                            handleChange('units_held', value === '' ? 0 : parseInt(value));
-                        }
-                    }}
-                    disabled={isLoading}
-                    placeholder="0"
-                    className={errors.units_held ? 'error' : ''}
-                />
-                {errors.units_held && <span className="error-text">{errors.units_held}</span>}
-            </div>
-
-            <div className="form-group">
-                <label htmlFor="total_amount">Total Amount</label>
-                <input
-                    type="text"
-                    id="total_amount"
-                    value={formData.total_amount === 0 ? '' : formData.total_amount.toFixed(2)}
-                    disabled
-                />
-                <span className="help-text">Auto-calculated from units held × amount per unit</span>
             </div>
 
             <div className="form-actions">

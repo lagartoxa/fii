@@ -4,7 +4,7 @@ FII model - Brazilian Real Estate Investment Trust (Fundos Imobiliários) catalo
 
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, UniqueConstraint
+from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import BaseModel
@@ -53,6 +53,13 @@ class Fii(BaseModel):
         nullable=True,
         index=True,
         comment="FII sector (commercial, residential, logistics, hybrid, etc.)"
+    )
+
+    cut_day: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+        index=True,
+        comment="Day of month for dividend cut-off (1-31)"
     )
 
     # Relationships

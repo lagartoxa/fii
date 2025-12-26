@@ -50,10 +50,7 @@ class TestCreateDividend:
         dividend_data = {
             "fii_pk": test_fii.pk,
             "payment_date": str(date.today() - timedelta(days=15)),
-            "reference_date": str(date.today() - timedelta(days=30)),
             "amount_per_unit": "0.85",
-            "units_held": 100,
-            "total_amount": "85.00",
         }
 
         # Act
@@ -71,17 +68,13 @@ class TestCreateDividend:
                 "user_pk",
                 "fii_pk",
                 "payment_date",
-                "reference_date",
                 "amount_per_unit",
-                "units_held",
-                "total_amount",
             ],
         )
 
         # Verify response values
         assert data["user_pk"] == test_user.pk  # Automatically set
         assert data["fii_pk"] == dividend_data["fii_pk"]
-        assert data["units_held"] == dividend_data["units_held"]
         assert Decimal(data["amount_per_unit"]) == Decimal(dividend_data["amount_per_unit"])
 
         # Verify dividend created in database
@@ -99,7 +92,6 @@ class TestCreateDividend:
             "payment_date": str(date.today() - timedelta(days=15)),
             "reference_date": str(date.today() - timedelta(days=30)),
             "amount_per_unit": "0.85",
-            "units_held": 100,
             "total_amount": "85.00",
         }
 
@@ -116,10 +108,7 @@ class TestCreateDividend:
         dividend_data = {
             "fii_pk": test_fii.pk,
             "payment_date": str(date.today() - timedelta(days=15)),
-            "reference_date": str(date.today() - timedelta(days=30)),
             "amount_per_unit": "0.85",
-            "units_held": 100,
-            "total_amount": "85.00",
         }
 
         # Act
@@ -267,17 +256,13 @@ class TestGetDividend:
                 "user_pk",
                 "fii_pk",
                 "payment_date",
-                "reference_date",
                 "amount_per_unit",
-                "units_held",
-                "total_amount",
             ],
         )
 
         # Verify response values
         assert data["pk"] == test_dividend.pk
         assert data["fii_pk"] == test_dividend.fii_pk
-        assert data["units_held"] == test_dividend.units_held
 
     def test_get_dividend_not_own(
         self, authenticated_client: TestClient, other_user_dividend: Dividend
@@ -326,8 +311,6 @@ class TestUpdateDividend:
         """Test updating dividend"""
         # Arrange
         update_data = {
-            "units_held": 150,
-            "total_amount": "127.50",
         }
 
         # Act
@@ -340,12 +323,9 @@ class TestUpdateDividend:
         data = response.json()
 
         # Verify response values
-        assert data["units_held"] == update_data["units_held"]
-        assert Decimal(data["total_amount"]) == Decimal(update_data["total_amount"])
 
         # Verify updated in database
         db_session.refresh(test_dividend)
-        assert test_dividend.units_held == update_data["units_held"]
         assert test_dividend.updated_by_pk == test_user.pk
 
     def test_update_dividend_not_own(
@@ -354,7 +334,6 @@ class TestUpdateDividend:
         """Test updating another user's dividend"""
         # Arrange
         update_data = {
-            "units_held": 200,
         }
 
         # Act
@@ -389,7 +368,6 @@ class TestUpdateDividend:
         """Test updating dividend without authentication"""
         # Arrange
         update_data = {
-            "units_held": 200,
         }
 
         # Act

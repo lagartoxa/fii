@@ -34,8 +34,6 @@ class Dividend(BaseModel):
     __tablename__ = "dividend"
     __table_args__ = (
         CheckConstraint('amount_per_unit > 0', name='ck_dividend_amount_per_unit'),
-        CheckConstraint('units_held > 0', name='ck_dividend_units'),
-        CheckConstraint('total_amount > 0', name='ck_dividend_total'),
         {'comment': 'Monthly dividend payment records'}
     )
 
@@ -74,18 +72,6 @@ class Dividend(BaseModel):
         comment="Dividend amount per unit in BRL"
     )
 
-    units_held: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment="Number of units held on payment date"
-    )
-
-    total_amount: Mapped[Decimal] = mapped_column(
-        Numeric(precision=12, scale=2),
-        nullable=False,
-        comment="Total dividend received (amount_per_unit * units_held)"
-    )
-
     # Relationships
     user = relationship(
         "User",
@@ -101,6 +87,6 @@ class Dividend(BaseModel):
 
     def __repr__(self) -> str:
         return (
-            f"<Dividend(pk={self.pk}, ticker='{self.fii.ticker if self.fii else None}', "
-            f"total_amount={self.total_amount}, date={self.payment_date})>"
+            f"<Dividend(pk={self.pk}, ticker='{self.fii.tag if self.fii else None}', "
+            f"amount={self.amount_per_unit}, date={self.payment_date})>"
         )

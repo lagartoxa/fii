@@ -121,6 +121,34 @@ You are designing the architecture for a Real Estate Investment Trust (REIT) man
    - Any clarification needed
 ```
 
+**Business Rules**
+- Monthly dividend calculation:
+  - For a given FII and reference month:
+    - Consider all purchase transactions executed on or before the dividend cut-off date
+    - Exclude any units that were sold before the cut-off date
+    - The eligible quantity is the net number of units held at the cut-off date
+  - The total dividend amount is calculated as:
+    - eligible_quantity × dividend_amount_per_unit
+  - For example:
+      Lets say I have the MXRF11 FII with cut day 30.
+      Lets say I buy:
+      01/09 - 0 shares (0 accumulated)
+      01/10 - 10 shares (10 accumulated)
+      01/11 - 20 shares (30 accumulated)
+      01/12 - 50 shares (80 accumulated)
+
+      And dividends paid by MXRF11:
+      30/09 - 0.1
+      30/10 - 0.11
+      30/11 - 0.12
+      30/12 - 0.13
+
+      I should receive in total of MXRF11 dividends:
+      30/09: 0.1 * (0) = 0
+      30/10: 0.11 * (0+10) = 1.1
+      30/11: 0.12 * (10+20) = 3.6
+      30/12: 0.13 * (30+50) = 10.4
+
 **Important Constraints:**
 - NEVER use queries on any files, always use repositories at app/db/repositories
 - Use clear, professional language in English
