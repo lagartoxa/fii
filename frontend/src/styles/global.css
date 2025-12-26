@@ -1,52 +1,73 @@
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 :root {
-  --primary-color: #2563eb;
-  --secondary-color: #64748b;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --background-color: #f8fafc;
-  --text-color: #1e293b;
-  --border-color: #e2e8f0;
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
+    /* Primary Colors */
+    --primary-color: #a2154a;           /* Active/accent color */
+    --primary-hover: #8a1140;           /* Darker shade for hover */
+    --secondary-color: #95989f;         /* Default text color */
+
+    /* Backgrounds */
+    --bg-main: #28282a;                 /* Main background (header, hover states) */
+    --bg-secondary: #181819;            /* Secondary background (sidebar, cards) */
+    --bg-hover: #28282a;                /* Hover state background */
+
+    /* Text Colors */
+    --text-default: #95989f;            /* Non-active, non-hovered text */
+    --text-active: #ffffff;             /* Active and hovered text */
+    --text-muted: #6b6d72;              /* Muted/disabled text */
+
+    /* Status Colors (keep semantic meaning) */
+    --success-color: #10b981;           /* Keep green for success */
+    --danger-color: #ef4444;            /* Keep red for errors */
+    --warning-color: #f59e0b;           /* Keep amber for warnings */
+
+    /* Borders */
+    --border-color: #3a3a3c;            /* Subtle border for dark theme */
+    --border-active: #a2154a;           /* Active state border */
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+
+    /* Spacing (keep existing) */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-main);
+    color: var(--text-default);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
 }
 
 .app {
-  padding: var(--spacing-xl);
-  max-width: 1200px;
-  margin: 0 auto;
+    padding: var(--spacing-xl);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 h1 {
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-md);
+    color: var(--text-active);
+    margin-bottom: var(--spacing-md);
 }
 
 p {
-  margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
 }

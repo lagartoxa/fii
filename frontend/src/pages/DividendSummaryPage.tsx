@@ -69,7 +69,7 @@ const DividendSummaryPage: React.FC = () => {
 
             <div className="filters-container" style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
                 <div>
-                    <label htmlFor="month-select" style={{ marginRight: '8px', fontWeight: 500 }}>Mês:</label>
+                    <label htmlFor="month-select" style={{ marginRight: '8px', fontWeight: 600, color: '#ffffff' }}>Mês:</label>
                     <select
                         id="month-select"
                         value={selectedMonth}
@@ -77,8 +77,10 @@ const DividendSummaryPage: React.FC = () => {
                         style={{
                             padding: '8px 12px',
                             borderRadius: '5px',
-                            border: '1px solid #dfe6e9',
-                            fontSize: '14px'
+                            border: '1px solid #3a3a3c',
+                            fontSize: '14px',
+                            backgroundColor: '#181819',
+                            color: '#95989f'
                         }}
                     >
                         {monthNames.map((name, index) => (
@@ -90,7 +92,7 @@ const DividendSummaryPage: React.FC = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="year-select" style={{ marginRight: '8px', fontWeight: 500 }}>Ano:</label>
+                    <label htmlFor="year-select" style={{ marginRight: '8px', fontWeight: 600, color: '#ffffff' }}>Ano:</label>
                     <select
                         id="year-select"
                         value={selectedYear}
@@ -98,8 +100,10 @@ const DividendSummaryPage: React.FC = () => {
                         style={{
                             padding: '8px 12px',
                             borderRadius: '5px',
-                            border: '1px solid #dfe6e9',
-                            fontSize: '14px'
+                            border: '1px solid #3a3a3c',
+                            fontSize: '14px',
+                            backgroundColor: '#181819',
+                            color: '#95989f'
                         }}
                     >
                         {yearOptions.map(year => (
@@ -152,7 +156,7 @@ const DividendSummaryPage: React.FC = () => {
                                         </tr>
                                     ))}
                                     {fii.dividends.length > 1 && (
-                                        <tr style={{ backgroundColor: '#f8fafc', fontWeight: 500 }}>
+                                        <tr style={{ backgroundColor: '#1f1f20', fontWeight: 600, color: '#ffffff' }}>
                                             <td colSpan={3} style={{ textAlign: 'right', paddingRight: '20px' }}>
                                                 Subtotal {fii.fii_tag}:
                                             </td>
@@ -165,7 +169,7 @@ const DividendSummaryPage: React.FC = () => {
                             ))}
                         </tbody>
                         <tfoot>
-                            <tr style={{ fontWeight: 'bold', backgroundColor: '#e8f4f8' }}>
+                            <tr style={{ fontWeight: 'bold', backgroundColor: '#a2154a', color: '#ffffff' }}>
                                 <td colSpan={4} style={{ textAlign: 'right', paddingRight: '20px' }}>
                                     Total Geral:
                                 </td>

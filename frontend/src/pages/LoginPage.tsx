@@ -35,10 +35,14 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-box">
-        <h1 className="login-title">FII Portfolio Manager</h1>
-        <p className="login-subtitle">Sign in to manage your investments</p>
+        <div className="login-logo">
+          <img src="/lagartoxa-logo.png" alt="Logo" />
+        </div>
+        <div className="login-form-container">
+          <h1 className="login-title">FII Portfolio Manager</h1>
+          <p className="login-subtitle">Sign in to manage your investments</p>
 
-        <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="login-form">
           {error && (
             <div className="error-message" role="alert">
               {error}
@@ -81,6 +85,7 @@ const LoginPage: React.FC = () => {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        </div>
       </div>
     </div>
   );

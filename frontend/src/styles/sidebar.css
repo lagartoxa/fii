@@ -1,57 +1,110 @@
 .sidebar {
-  width: 250px;
-  background-color: #2c3e50;
-  color: white;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  overflow-y: auto;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    background-color: #181819;
+    color: #ffffff;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 20px 0 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sidebar-logo img {
+    width: 100%;
+    height: auto;
+    transition: width 0.3s ease, opacity 0.2s ease;
+}
+
+.sidebar-logo:hover img {
+    opacity: 0.8;
 }
 
 .sidebar-nav {
-  padding: 20px 0;
+    padding: 0 0 20px 0;
 }
 
 .sidebar-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 15px 20px;
 }
 
 .sidebar-menu li {
-  margin: 0;
+    margin: 4px 0;
 }
 
 .sidebar-menu a {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  color: #ecf0f1;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    color: #95989f;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
 }
 
 .sidebar-menu a:hover {
-  background-color: #34495e;
-  border-left-color: #3498db;
+    background-color: #28282a;
+    color: #ffffff;
+    border-left-color: #a2154a;
 }
 
 .sidebar-menu a.active {
-  background-color: #34495e;
-  border-left-color: #3498db;
-  font-weight: 600;
+    background-color: #a2154a;
+    color: #ffffff;
+    font-weight: 600;
+    border-left-color: #a2154a;
 }
 
 .sidebar-menu .icon {
-  font-size: 1.5rem;
-  margin-right: 15px;
-  width: 30px;
-  text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    min-width: 20px;
+    color: inherit;
+}
+
+.sidebar-menu .icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
 }
 
 .sidebar-menu .label {
-  font-size: 1rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-menu a {
+    justify-content: center;
+    padding: 10px 8px;
+    border-left: none;
+}
+
+.sidebar.collapsed .sidebar-menu .icon {
+    margin-right: 0;
 }

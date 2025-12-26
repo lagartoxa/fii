@@ -1,51 +1,83 @@
 .layout {
-  display: flex;
-  min-height: 100vh;
+    display: flex;
+    min-height: 100vh;
 }
 
 .main-container {
-  flex: 1;
-  margin-left: 250px;
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    margin-left: 250px;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+.main-container.sidebar-collapsed {
+    margin-left: 70px;
 }
 
 .main-header {
-  background-color: white;
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+    background-color: #28282a;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sidebar-toggle {
+    background-color: transparent;
+    color: #95989f;
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.sidebar-toggle:hover {
+    background-color: #181819;
+    color: #ffffff;
+    border-color: #a2154a;
 }
 
 .app-title {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin: 0;
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin: 0;
 }
 
 .logout-button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    background-color: #a2154a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .logout-button:hover {
-  background-color: #c0392b;
+    background-color: #c0392b;
 }
 
 .main-content {
-  flex: 1;
-  background-color: #ecf0f1;
-  overflow-y: auto;
+    flex: 1;
+    background-color: #28282a;
+    overflow-y: auto;
 }

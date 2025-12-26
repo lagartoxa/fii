@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import authService from '../services/authService';
@@ -10,18 +10,28 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogout = async () => {
     await authService.logout();
     navigate('/login');
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
     <div className="layout">
-      <Sidebar />
-      <div className="main-container">
+      <Sidebar isCollapsed={sidebarCollapsed} />
+      <div className={`main-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <header className="main-header">
-          <h1 className="app-title">FII Portfolio Manager</h1>
+          <div className="header-left">
+            <button onClick={toggleSidebar} className="sidebar-toggle">
+              {sidebarCollapsed ? '☰' : '✕'}
+            </button>
+            <h1 className="app-title">FII Portfolio Manager</h1>
+          </div>
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>
