@@ -1,5 +1,6 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { CreateUserData } from '../services/userService';
+import { Role } from '../services/roleService';
 import '../styles/fii-form.css';
 
 interface UserFormProps {
@@ -8,6 +9,7 @@ interface UserFormProps {
     isLoading?: boolean;
     initialData?: any;
     isEditMode?: boolean;
+    roles: Role[];
 }
 
 const UserForm: React.FC<UserFormProps> = ({
@@ -15,14 +17,16 @@ const UserForm: React.FC<UserFormProps> = ({
     onCancel,
     isLoading = false,
     initialData,
-    isEditMode = false
+    isEditMode = false,
+    roles
 }) => {
     const [formData, setFormData] = useState<any>({
         email: '',
         username: '',
         full_name: '',
         password: '',
-        is_active: true
+        is_active: true,
+        role_pks: []
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -33,7 +37,8 @@ const UserForm: React.FC<UserFormProps> = ({
                 username: initialData.username || '',
                 full_name: initialData.full_name || '',
                 password: '', // Always empty for security
-                is_active: initialData.is_active !== undefined ? initialData.is_active : true
+                is_active: initialData.is_active !== undefined ? initialData.is_active : true,
+                role_pks: initialData.role_pks || []
             });
         }
     }, [initialData]);
@@ -74,7 +79,8 @@ const UserForm: React.FC<UserFormProps> = ({
             email: formData.email,
             username: formData.username,
             full_name: formData.full_name || undefined,
-            password: formData.password
+            password: formData.password,
+            role_pks: formData.role_pks
         };
 
         // Don't send password if empty in edit mode
@@ -85,11 +91,29 @@ const UserForm: React.FC<UserFormProps> = ({
         await onSubmit(dataToSubmit);
     };
 
-    const handleChange = (field: keyof CreateUserData, value: string) => {
+    const handleChange = (field: keyof CreateUserData, value: any) => {
         setFormData({ ...formData, [field]: value });
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
+    };
+
+    const handleRoleToggle = (rolePk: number) => {
+        const currentPks = formData.role_pks || [];
+        const newPks = currentPks.includes(rolePk)
+            ? currentPks.filter((pk: number) => pk !== rolePk)
+            : [...currentPks, rolePk];
+
+        handleChange('role_pks', newPks);
+    };
+
+    const handleSelectAll = () => {
+        const allPks = roles.map(r => r.pk);
+        handleChange('role_pks', allPks);
+    };
+
+    const handleDeselectAll = () => {
+        handleChange('role_pks', []);
     };
 
     return (
@@ -175,6 +199,51 @@ const UserForm: React.FC<UserFormProps> = ({
                     </label>
                 </div>
             )}
+
+            <div className="form-group">
+                <label>
+                    Roles
+                    <div className="permission-actions">
+                        <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            disabled={isLoading}
+                            className="btn-link"
+                        >
+                            Select All
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDeselectAll}
+                            disabled={isLoading}
+                            className="btn-link"
+                        >
+                            Deselect All
+                        </button>
+                    </div>
+                </label>
+                <div className="permission-grid">
+                    {roles.map(role => (
+                        <label key={role.pk} className="permission-checkbox">
+                            <input
+                                type="checkbox"
+                                checked={(formData.role_pks || []).includes(role.pk)}
+                                onChange={() => handleRoleToggle(role.pk)}
+                                disabled={isLoading}
+                            />
+                            <span className="permission-label">
+                                <strong>{role.name}</strong>
+                                {role.description && (
+                                    <span className="permission-description">{role.description}</span>
+                                )}
+                            </span>
+                        </label>
+                    ))}
+                </div>
+                <span className="help-text">
+                    {(formData.role_pks || []).length} role(s) selected
+                </span>
+            </div>
 
             <div className="form-actions">
                 <button

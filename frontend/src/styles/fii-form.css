@@ -178,3 +178,83 @@ input:disabled + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+
+/* Permission Selection Styles */
+.permission-actions {
+  display: inline-flex;
+  gap: 12px;
+  margin-left: 12px;
+  font-weight: 400;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #3498db;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.btn-link:hover:not(:disabled) {
+  color: #2980b9;
+}
+
+.btn-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.permission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 5px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.permission-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.permission-checkbox:hover {
+  background-color: #e9ecef;
+}
+
+.permission-checkbox input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.permission-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.permission-label strong {
+  color: #2c3e50;
+}
+
+.permission-description {
+  display: block;
+  color: #7f8c8d;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}

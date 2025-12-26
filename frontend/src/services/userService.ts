@@ -9,6 +9,7 @@ export interface User {
     is_superuser: boolean;
     created_at: string;
     updated_at: string;
+    role_pks: number[];
 }
 
 export interface CreateUserData {
@@ -16,6 +17,7 @@ export interface CreateUserData {
     username: string;
     full_name?: string;
     password: string;
+    role_pks: number[];
 }
 
 export interface UpdateUserData {
@@ -24,6 +26,7 @@ export interface UpdateUserData {
     full_name?: string;
     password?: string;
     is_active?: boolean;
+    role_pks?: number[];
 }
 
 const userService = {

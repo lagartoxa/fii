@@ -3,7 +3,7 @@ Pydantic schemas for User model.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Schema for creating a new User."""
     password: str = Field(..., min_length=8, description="User password")
+    role_pks: List[int] = Field(default_factory=list, description="List of role PKs to assign")
 
 
 class UserUpdate(BaseModel):
@@ -27,6 +28,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=255)
     password: Optional[str] = Field(None, min_length=8)
     is_active: Optional[bool] = None
+    role_pks: Optional[List[int]] = Field(None, description="List of role PKs to assign")
 
 
 class UserInDB(UserBase):
@@ -52,6 +54,7 @@ class UserResponse(UserBase):
     is_superuser: bool
     created_at: datetime
     updated_at: datetime
+    role_pks: List[int] = Field(default_factory=list, description="List of assigned role PKs")
 
     class Config:
         from_attributes = True

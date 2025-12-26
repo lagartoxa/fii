@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import roleService, { Role, CreateRoleData } from '../services/roleService';
+import permissionService, { Permission } from '../services/permissionService';
 import Modal from '../components/Modal';
 import RoleForm from '../components/RoleForm';
 import '../styles/fiis.css';
 
 const RolesPage: React.FC = () => {
     const [roles, setRoles] = useState<Role[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +16,7 @@ const RolesPage: React.FC = () => {
 
     useEffect(() => {
         loadRoles();
+        loadPermissions();
     }, []);
 
     const loadRoles = async () => {
@@ -27,6 +30,16 @@ const RolesPage: React.FC = () => {
             setError('Failed to load Roles. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadPermissions = async () => {
+        try {
+            const data = await permissionService.getAll();
+            setPermissions(data);
+        } catch (err: any) {
+            console.error('Error loading Permissions:', err);
+            setError('Failed to load Permissions. Please try again.');
         }
     };
 
@@ -165,8 +178,10 @@ const RolesPage: React.FC = () => {
                     isLoading={isSaving}
                     initialData={editingRole ? {
                         name: editingRole.name,
-                        description: editingRole.description
+                        description: editingRole.description,
+                        permission_pks: editingRole.permission_pks
                     } : undefined}
+                    permissions={permissions}
                 />
             </Modal>
         </div>

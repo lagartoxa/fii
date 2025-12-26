@@ -6,16 +6,19 @@ export interface Role {
     description?: string;
     created_at: string;
     updated_at: string;
+    permission_pks: number[];
 }
 
 export interface CreateRoleData {
     name: string;
     description?: string;
+    permission_pks: number[];
 }
 
 export interface UpdateRoleData {
     name?: string;
     description?: string;
+    permission_pks?: number[];
 }
 
 const roleService = {

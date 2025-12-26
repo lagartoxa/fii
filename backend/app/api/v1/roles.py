@@ -8,11 +8,63 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.db.models.role import Role
+from app.db.models.role_permission import RolePermission
 from app.db.models.user import User
+from app.db.repositories.permission_repository import PermissionRepository
 from app.db.repositories.role_repository import RoleRepository
 from app.schemas.role import RoleCreate, RoleResponse, RoleUpdate
 
 router = APIRouter()
+
+
+def _sync_role_permissions(db: Session, role: Role, permission_pks: List[int], current_user_pk: int) -> None:
+    """
+    Synchronize role permissions - add new and remove old.
+
+    Args:
+        db: Database session
+        role: Role instance
+        permission_pks: List of permission PKs to assign
+        current_user_pk: Current user PK for audit
+    """
+    # Get current permission PKs
+    current_permission_pks = {rp.permission_pk for rp in role.role_permissions if not rp.deleted}
+
+    # Permissions to add
+    to_add = set(permission_pks) - current_permission_pks
+
+    # Permissions to remove
+    to_remove = current_permission_pks - set(permission_pks)
+
+    # Add new permissions
+    for perm_pk in to_add:
+        role_perm = RolePermission(
+            role_pk=role.pk,
+            permission_pk=perm_pk,
+            created_by_pk=current_user_pk,
+            updated_by_pk=current_user_pk
+        )
+        db.add(role_perm)
+
+    # Remove old permissions (soft delete)
+    for rp in role.role_permissions:
+        if not rp.deleted and rp.permission_pk in to_remove:
+            rp.soft_delete(current_user_pk)
+
+    db.flush()
+
+
+def _role_to_response(role: Role) -> RoleResponse:
+    """Convert Role model to RoleResponse schema."""
+    return RoleResponse(
+        pk=role.pk,
+        name=role.name,
+        description=role.description,
+        created_at=role.created_at,
+        updated_at=role.updated_at,
+        permission_pks=[rp.permission_pk for rp in role.role_permissions if not rp.deleted]
+    )
 
 
 @router.post("/", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
@@ -52,12 +104,28 @@ def create_role(
             # Restore the soft-deleted record and update its data
             deleted_role.description = role_data.description
             restored_role = role_repo.restore(deleted_role)
-            return restored_role
 
-        # Create new Role
-        new_role = role_repo.create(role_data)
+            # Sync permissions
+            _sync_role_permissions(db, restored_role, role_data.permission_pks, current_user.pk)
 
-        return new_role
+            return _role_to_response(restored_role)
+
+        # Create new Role (excluding permission_pks which is not a DB field)
+        permission_pks = role_data.permission_pks
+        new_role = Role(
+            name=role_data.name,
+            description=role_data.description,
+            created_by_pk=current_user.pk,
+            updated_by_pk=current_user.pk
+        )
+        db.add(new_role)
+        db.flush()
+        db.refresh(new_role)
+
+        # Sync permissions
+        _sync_role_permissions(db, new_role, permission_pks, current_user.pk)
+
+        return _role_to_response(new_role)
 
 
 @router.get("/", response_model=List[RoleResponse])
@@ -82,7 +150,7 @@ def list_roles(
     with RoleRepository(db) as role_repo:
         roles = role_repo.get_all(skip=skip, limit=limit)
 
-        return roles
+        return [_role_to_response(role) for role in roles]
 
 
 @router.get("/{pk}", response_model=RoleResponse)
@@ -114,7 +182,7 @@ def get_role(
                 detail="Role not found"
             )
 
-        return role
+        return _role_to_response(role)
 
 
 @router.patch("/{pk}", response_model=RoleResponse)
@@ -162,7 +230,11 @@ def update_role(
         # Update Role
         updated_role = role_repo.update(pk, role_data)
 
-        return updated_role
+        # Sync permissions if provided
+        if role_data.permission_pks is not None:
+            _sync_role_permissions(db, updated_role, role_data.permission_pks, current_user.pk)
+
+        return _role_to_response(updated_role)
 
 
 @router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)

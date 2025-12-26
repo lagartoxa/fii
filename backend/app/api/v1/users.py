@@ -10,10 +10,63 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user, get_db
 from app.core.security import get_password_hash
 from app.db.models.user import User
+from app.db.models.user_role import UserRole
 from app.db.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 
 router = APIRouter()
+
+
+def _sync_user_roles(db: Session, user: User, role_pks: List[int], current_user_pk: int) -> None:
+    """
+    Synchronize user roles - add new and remove old.
+
+    Args:
+        db: Database session
+        user: User instance
+        role_pks: List of role PKs to assign
+        current_user_pk: Current user PK for audit
+    """
+    # Get current role PKs
+    current_role_pks = {ur.role_pk for ur in user.user_roles if not ur.deleted}
+
+    # Roles to add
+    to_add = set(role_pks) - current_role_pks
+
+    # Roles to remove
+    to_remove = current_role_pks - set(role_pks)
+
+    # Add new roles
+    for role_pk in to_add:
+        user_role = UserRole(
+            user_pk=user.pk,
+            role_pk=role_pk,
+            created_by_pk=current_user_pk,
+            updated_by_pk=current_user_pk
+        )
+        db.add(user_role)
+
+    # Remove old roles (soft delete)
+    for ur in user.user_roles:
+        if not ur.deleted and ur.role_pk in to_remove:
+            ur.soft_delete(current_user_pk)
+
+    db.flush()
+
+
+def _user_to_response(user: User) -> UserResponse:
+    """Convert User model to UserResponse schema."""
+    return UserResponse(
+        pk=user.pk,
+        email=user.email,
+        username=user.username,
+        full_name=user.full_name,
+        is_active=user.is_active,
+        is_superuser=user.is_superuser,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        role_pks=[ur.role_pk for ur in user.user_roles if not ur.deleted]
+    )
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -64,23 +117,30 @@ def create_user(
             deleted_user.full_name = user_data.full_name
             deleted_user.hashed_password = get_password_hash(user_data.password)
             restored_user = user_repo.restore(deleted_user)
-            return restored_user
 
-        # Create new User with hashed password
-        user_dict = user_data.model_dump()
-        password = user_dict.pop('password')
-        user_dict['hashed_password'] = get_password_hash(password)
+            # Sync roles
+            _sync_user_roles(db, restored_user, user_data.role_pks, current_user.pk)
 
-        from pydantic import BaseModel
-        class UserCreateDB(BaseModel):
-            email: str
-            username: str
-            full_name: str | None
-            hashed_password: str
+            return _user_to_response(restored_user)
 
-        new_user = user_repo.create(UserCreateDB(**user_dict))
+        # Create new User (excluding role_pks which is not a DB field)
+        role_pks = user_data.role_pks
+        new_user = User(
+            email=user_data.email,
+            username=user_data.username,
+            full_name=user_data.full_name,
+            hashed_password=get_password_hash(user_data.password),
+            created_by_pk=current_user.pk,
+            updated_by_pk=current_user.pk
+        )
+        db.add(new_user)
+        db.flush()
+        db.refresh(new_user)
 
-        return new_user
+        # Sync roles
+        _sync_user_roles(db, new_user, role_pks, current_user.pk)
+
+        return _user_to_response(new_user)
 
 
 @router.get("/", response_model=List[UserResponse])
@@ -105,7 +165,7 @@ def list_users(
     with UserRepository(db) as user_repo:
         users = user_repo.get_all(skip=skip, limit=limit)
 
-        return users
+        return [_user_to_response(user) for user in users]
 
 
 @router.get("/{pk}", response_model=UserResponse)
@@ -137,7 +197,7 @@ def get_user(
                 detail="User not found"
             )
 
-        return user
+        return _user_to_response(user)
 
 
 @router.patch("/{pk}", response_model=UserResponse)
@@ -192,8 +252,10 @@ def update_user(
                     detail=f"User with email '{user_data.email}' already exists"
                 )
 
-        # Hash password if provided
+        # Extract role_pks and hash password if provided
         update_dict = user_data.model_dump(exclude_unset=True)
+        role_pks = update_dict.pop('role_pks', None)
+
         if 'password' in update_dict:
             password = update_dict.pop('password')
             update_dict['hashed_password'] = get_password_hash(password)
@@ -209,7 +271,11 @@ def update_user(
         # Update User
         updated_user = user_repo.update(pk, UserUpdateDB(**update_dict))
 
-        return updated_user
+        # Sync roles if provided
+        if role_pks is not None:
+            _sync_user_roles(db, updated_user, role_pks, current_user.pk)
+
+        return _user_to_response(updated_user)
 
 
 @router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)

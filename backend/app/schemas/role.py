@@ -3,7 +3,7 @@ Pydantic schemas for Role model.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,13 +16,14 @@ class RoleBase(BaseModel):
 
 class RoleCreate(RoleBase):
     """Schema for creating a new Role."""
-    pass
+    permission_pks: List[int] = Field(default_factory=list, description="List of permission PKs to assign")
 
 
 class RoleUpdate(BaseModel):
     """Schema for updating an existing Role."""
     name: Optional[str] = Field(None, min_length=1, max_length=50)
     description: Optional[str] = Field(None, max_length=255)
+    permission_pks: Optional[List[int]] = Field(None, description="List of permission PKs to assign")
 
 
 class RoleInDB(RoleBase):
@@ -43,6 +44,7 @@ class RoleResponse(RoleBase):
     pk: int
     created_at: datetime
     updated_at: datetime
+    permission_pks: List[int] = Field(default_factory=list, description="List of assigned permission PKs")
 
     class Config:
         from_attributes = True

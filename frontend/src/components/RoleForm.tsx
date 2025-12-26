@@ -1,5 +1,6 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { CreateRoleData } from '../services/roleService';
+import { Permission } from '../services/permissionService';
 import '../styles/fii-form.css';
 
 interface RoleFormProps {
@@ -7,17 +8,20 @@ interface RoleFormProps {
     onCancel: () => void;
     isLoading?: boolean;
     initialData?: CreateRoleData;
+    permissions: Permission[];
 }
 
 const RoleForm: React.FC<RoleFormProps> = ({
     onSubmit,
     onCancel,
     isLoading = false,
-    initialData
+    initialData,
+    permissions
 }) => {
     const [formData, setFormData] = useState<CreateRoleData>({
         name: '',
-        description: ''
+        description: '',
+        permission_pks: []
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -47,17 +51,36 @@ const RoleForm: React.FC<RoleFormProps> = ({
 
         const dataToSubmit: CreateRoleData = {
             name: formData.name,
-            description: formData.description || undefined
+            description: formData.description || undefined,
+            permission_pks: formData.permission_pks
         };
 
         await onSubmit(dataToSubmit);
     };
 
-    const handleChange = (field: keyof CreateRoleData, value: string) => {
+    const handleChange = (field: keyof CreateRoleData, value: any) => {
         setFormData({ ...formData, [field]: value });
         if (errors[field]) {
             setErrors({ ...errors, [field]: '' });
         }
+    };
+
+    const handlePermissionToggle = (permissionPk: number) => {
+        const currentPks = formData.permission_pks || [];
+        const newPks = currentPks.includes(permissionPk)
+            ? currentPks.filter(pk => pk !== permissionPk)
+            : [...currentPks, permissionPk];
+
+        handleChange('permission_pks', newPks);
+    };
+
+    const handleSelectAll = () => {
+        const allPks = permissions.map(p => p.pk);
+        handleChange('permission_pks', allPks);
+    };
+
+    const handleDeselectAll = () => {
+        handleChange('permission_pks', []);
     };
 
     return (
@@ -90,6 +113,51 @@ const RoleForm: React.FC<RoleFormProps> = ({
                     maxLength={255}
                     rows={3}
                 />
+            </div>
+
+            <div className="form-group">
+                <label>
+                    Permissions
+                    <div className="permission-actions">
+                        <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            disabled={isLoading}
+                            className="btn-link"
+                        >
+                            Select All
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDeselectAll}
+                            disabled={isLoading}
+                            className="btn-link"
+                        >
+                            Deselect All
+                        </button>
+                    </div>
+                </label>
+                <div className="permission-grid">
+                    {permissions.map(permission => (
+                        <label key={permission.pk} className="permission-checkbox">
+                            <input
+                                type="checkbox"
+                                checked={(formData.permission_pks || []).includes(permission.pk)}
+                                onChange={() => handlePermissionToggle(permission.pk)}
+                                disabled={isLoading}
+                            />
+                            <span className="permission-label">
+                                <strong>{permission.resource}</strong>:{permission.action}
+                                {permission.description && (
+                                    <span className="permission-description">{permission.description}</span>
+                                )}
+                            </span>
+                        </label>
+                    ))}
+                </div>
+                <span className="help-text">
+                    {(formData.permission_pks || []).length} permission(s) selected
+                </span>
             </div>
 
             <div className="form-actions">

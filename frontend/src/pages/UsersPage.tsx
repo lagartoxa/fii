@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import userService, { User, CreateUserData } from '../services/userService';
+import roleService, { Role } from '../services/roleService';
 import Modal from '../components/Modal';
 import UserForm from '../components/UserForm';
 import '../styles/fiis.css';
 
 const UsersPage: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
+    const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +16,7 @@ const UsersPage: React.FC = () => {
 
     useEffect(() => {
         loadUsers();
+        loadRoles();
     }, []);
 
     const loadUsers = async () => {
@@ -27,6 +30,16 @@ const UsersPage: React.FC = () => {
             setError('Failed to load Users. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadRoles = async () => {
+        try {
+            const data = await roleService.getAll();
+            setRoles(data);
+        } catch (err: any) {
+            console.error('Error loading Roles:', err);
+            setError('Failed to load Roles. Please try again.');
         }
     };
 
@@ -206,9 +219,11 @@ const UsersPage: React.FC = () => {
                         username: editingUser.username,
                         full_name: editingUser.full_name,
                         password: '', // Always empty for security
-                        is_active: editingUser.is_active
+                        is_active: editingUser.is_active,
+                        role_pks: editingUser.role_pks
                     } : undefined}
                     isEditMode={!!editingUser}
+                    roles={roles}
                 />
             </Modal>
         </div>
